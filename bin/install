@@ -69,11 +69,19 @@ install_luaJIT() {
     make amalg "${luaJIT_configure_options[@]}" || exit 1
     make install "${luaJIT_configure_options[@]}" || exit 1
 
-    # luajit beta versions do not symlink luajit to the built binary,
-    # so we'll do that manually here, for convenience and also so
-    # luarocks can install.
+    # the development releases deliberately do NOT install a symlink
+    # for luajit to the built binary, so we'll do that manually here,
+    # for convenience and also so luarocks can install.
     if [[ $luaJIT_version == *"beta"* ]]; then
       ln -sf luajit-"$luaJIT_version" "$ASDF_INSTALL_PATH"/bin/luajit
+    fi
+
+    # on ROLLING versions the relver is not static, it is generated
+    # from git commit date during compilation
+    if [[ $luaJIT_version == *"ROLLING"* ]]; then
+      local rolling_version
+      rolling_version=$(<src/luajit_relver.txt)
+      ln -sf luajit-"${luaJIT_version/ROLLING/${rolling_version}}" "$ASDF_INSTALL_PATH"/bin/luajit
     fi
 
     ##########################################################################
